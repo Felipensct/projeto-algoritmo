@@ -89,6 +89,3 @@ Para suporte, entre em contato através de [seu contato aqui].
 - Implementar visualização 3D
 - Adicionar mais tipos de móveis
 - Melhorar feedback visual de erros
-
----
-⌨️ com ❤️ por [seu nome]
