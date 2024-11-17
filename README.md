@@ -75,7 +75,8 @@ Para contribuir com o projeto:
 - 1.0.0: Versão inicial com funcionalidades básicas
 
 ## ✍️ Autores
-- [Seu Nome]
+- Felipe
+- Ariel
 
 ## 📄 Licença
 Este projeto está sob a licença [sua licença aqui].
