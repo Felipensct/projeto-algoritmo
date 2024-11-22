@@ -1,7 +1,24 @@
 package pilhacomlista2;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 class Peca {
@@ -127,8 +144,10 @@ public class MontagemCadeira extends JFrame {
         painelMontagem.add(numeroCombo);
         JButton btnMontar = new JButton("Montar Peça");
         JButton btnDesmontar = new JButton("Desmontar Tudo");
+        JButton btnDesmontarPassoAPasso = new JButton("Desmontar Passo a Passo");
         painelMontagem.add(btnMontar);
         painelMontagem.add(btnDesmontar);
+        painelMontagem.add(btnDesmontarPassoAPasso);
 
         // Painel superior combinado
         JPanel painelSuperior = new JPanel(new GridLayout(2, 1));
@@ -139,6 +158,7 @@ public class MontagemCadeira extends JFrame {
         btnIniciar.addActionListener(e -> iniciarNovaMontagem());
         btnMontar.addActionListener(e -> montarPeca());
         btnDesmontar.addActionListener(e -> realizarDesmontagem());
+        btnDesmontarPassoAPasso.addActionListener(e -> realizarDesmontagemPassoAPasso());
 
         // Painel central
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
@@ -193,7 +213,7 @@ public class MontagemCadeira extends JFrame {
         Peca peca = new Peca(nome, numero, cadeiraAtual);
         
         if (validarProximaPeca(peca)) {
-            pilhaMontagem.push(peca);
+            pilhaMontagem.push(peca);  // Utilizando o método push da pilha
             listModel.addElement(peca.toString());
             logArea.append("Peça montada corretamente: " + peca + "\n");
 
@@ -212,40 +232,30 @@ public class MontagemCadeira extends JFrame {
                 }
             }
         } else {
-            Peca[] sequenciaAtual = getSequenciaCorreta(cadeiraAtual);
-            int indiceAtual = listModel.getSize() % SEQUENCIA_BASE.length;
-            String mensagemErro = "Peça incorreta!\n" +
-                "Você tentou montar: " + peca + "\n" +
-                "Esperado: " + sequenciaAtual[indiceAtual];
-            
-            logArea.append("ERRO: " + mensagemErro + "\n");
-            JOptionPane.showMessageDialog(this,
-                mensagemErro,
-                "Erro na Montagem",
-                JOptionPane.ERROR_MESSAGE);
+            logArea.setForeground(Color.RED);
+            logArea.append("Erro: A peça " + peca + " está fora da ordem correta.\n");
+            logArea.setForeground(Color.BLACK);
         }
     }
 
     private void realizarDesmontagem() {
-        while (!pilhaMontagem.pEmpty()) {
-            Peca peca = (Peca) pilhaMontagem.removerFinal();
-            pilhaDesmontagem.push(peca);
-            logArea.append("Desmontada: " + peca + "\n");
+        while (!pilhaMontagem.pEmpty()) {  // Usando pEmpty()
+            Peca peca = (Peca) pilhaMontagem.removerFinal();  // Usando removerFinal()
+            logArea.append("Desmontando: " + peca + "\n");
         }
-        listModel.clear();
-        cadeiraAtual = 1;
-        logArea.append("Desmontagem completa realizada!\n");
+        logArea.append("Desmontagem concluída.\n");
+    }
+
+    private void realizarDesmontagemPassoAPasso() {
+        if (!pilhaMontagem.pEmpty()) {
+            Peca peca = (Peca) pilhaMontagem.removerFinal();  // Usando removerFinal()
+            logArea.append("Desmontando peça: " + peca + "\n");
+        } else {
+            logArea.append("A pilha de montagem já está vazia.\n");
+        }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(
-                    UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            new MontagemCadeira().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new MontagemCadeira().setVisible(true));
     }
 }
