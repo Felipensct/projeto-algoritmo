@@ -62,7 +62,6 @@ class Peca {
 
 public class MontagemCadeira extends JFrame {
     private Pilha pilhaMontagem;
-    private Pilha pilhaDesmontagem;
     private DefaultListModel<String> listModel;
     private JList<String> listaComponentes;
     private JTextArea logArea;
@@ -94,7 +93,6 @@ public class MontagemCadeira extends JFrame {
 
     public MontagemCadeira() {
         pilhaMontagem = new Pilha();
-        pilhaDesmontagem = new Pilha();
         configurarJanela();
         inicializarComponentes();
         configurarLayout();
