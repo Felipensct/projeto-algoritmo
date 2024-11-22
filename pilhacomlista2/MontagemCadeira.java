@@ -1,9 +1,10 @@
 package pilhacomlista2;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.util.Deque;
+import java.util.LinkedList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -21,48 +22,11 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
-class Peca {
-    private String nome;
-    private int numero;
-    private int numeroCadeira;
-
-    public Peca(String nome, int numero, int numeroCadeira) {
-        this.nome = nome;
-        this.numero = numero;
-        this.numeroCadeira = numeroCadeira;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public int getNumero() {
-        return numero;
-    }
-
-    public int getNumeroCadeira() {
-        return numeroCadeira;
-    }
-
-    @Override
-    public String toString() {
-        return "Cadeira " + numeroCadeira + ": " + nome + " - " + numero;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Peca peca = (Peca) obj;
-        return numero == peca.numero && 
-               nome.equals(peca.nome) && 
-               numeroCadeira == peca.numeroCadeira;
-    }
-}
-
 public class MontagemCadeira extends JFrame {
     private Pilha pilhaMontagem;
     private Pilha pilhaDesmontagem;
+    private Deque<Peca> filaSequencia;
+    // private Queue<Peca> filaSequencia;  // Fila para controle de sequência
     private DefaultListModel<String> listModel;
     private JList<String> listaComponentes;
     private JTextArea logArea;
@@ -71,30 +35,32 @@ public class MontagemCadeira extends JFrame {
     private JSpinner spinnerCadeiras;
     private int cadeiraAtual = 1;
     private int totalCadeiras = 1;
+
     private static final Peca[] SEQUENCIA_BASE = {
-            new Peca("Perna da mesa", 1, 1),
-            new Peca("Acentos", 1, 1),
-            new Peca("Arruela", 1, 1),
-            new Peca("Parafuso", 1, 1),
-            new Peca("Perna da mesa", 2, 1),
-            new Peca("Acentos", 1, 1),
-            new Peca("Arruela", 2, 1),
-            new Peca("Parafuso", 2, 1),
-            new Peca("Perna da mesa", 3, 1),
-            new Peca("Acentos", 1, 1),
-            new Peca("Arruela", 3, 1),
-            new Peca("Parafuso", 3, 1),
-            new Peca("Perna da mesa", 4, 1),
-            new Peca("Acentos", 1, 1),
-            new Peca("Arruela", 4, 1),
-            new Peca("Parafuso", 4, 1),
-            new Peca("Suporte para encosto", 1, 1),
-            new Peca("Encosto", 1, 1)
+        new Peca("Perna da mesa", 1, 1),
+        new Peca("Acentos", 1, 1),
+        new Peca("Arruela", 1, 1),
+        new Peca("Parafuso", 1, 1),
+        new Peca("Perna da mesa", 2, 1),
+        new Peca("Acentos", 1, 1),
+        new Peca("Arruela", 2, 1),
+        new Peca("Parafuso", 2, 1),
+        new Peca("Perna da mesa", 3, 1),
+        new Peca("Acentos", 1, 1),
+        new Peca("Arruela", 3, 1),
+        new Peca("Parafuso", 3, 1),
+        new Peca("Perna da mesa", 4, 1),
+        new Peca("Acentos", 1, 1),
+        new Peca("Arruela", 4, 1),
+        new Peca("Parafuso", 4, 1),
+        new Peca("Suporte para encosto", 1, 1),
+        new Peca("Encosto", 1, 1)
     };
 
     public MontagemCadeira() {
         pilhaMontagem = new Pilha();
         pilhaDesmontagem = new Pilha();
+        filaSequencia = new LinkedList<>();
         configurarJanela();
         inicializarComponentes();
         configurarLayout();
@@ -127,53 +93,54 @@ public class MontagemCadeira extends JFrame {
 
     private void configurarLayout() {
         setLayout(new BorderLayout(10, 10));
-        ((JPanel)getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        // Painel superior com configuração de cadeiras
+        ((JPanel) getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
+    
         JPanel painelConfig = new JPanel(new FlowLayout(FlowLayout.LEFT));
         painelConfig.add(new JLabel("Número de Cadeiras:"));
         painelConfig.add(spinnerCadeiras);
         JButton btnIniciar = new JButton("Iniciar Montagem");
         painelConfig.add(btnIniciar);
-
-        // Painel de montagem
+    
         JPanel painelMontagem = new JPanel(new FlowLayout(FlowLayout.LEFT));
         painelMontagem.add(new JLabel("Peça:"));
         painelMontagem.add(pecaCombo);
         painelMontagem.add(new JLabel("Número:"));
         painelMontagem.add(numeroCombo);
         JButton btnMontar = new JButton("Montar Peça");
-        JButton btnDesmontar = new JButton("Desmontar Tudo");
-        JButton btnDesmontarPassoAPasso = new JButton("Desmontar Passo a Passo");
         painelMontagem.add(btnMontar);
-        painelMontagem.add(btnDesmontar);
-        painelMontagem.add(btnDesmontarPassoAPasso);
-
-        // Painel superior combinado
+    
+        // Botões de desmontagem
+        JButton btnDesmontarPeca = new JButton("Desmontar Peça");
+        JButton btnDesmontarTudo = new JButton("Desmontar Tudo");
+        painelMontagem.add(btnDesmontarPeca);
+        painelMontagem.add(btnDesmontarTudo);
+    
         JPanel painelSuperior = new JPanel(new GridLayout(2, 1));
         painelSuperior.add(painelConfig);
         painelSuperior.add(painelMontagem);
-
-        // Configurar eventos
+    
         btnIniciar.addActionListener(e -> iniciarNovaMontagem());
         btnMontar.addActionListener(e -> montarPeca());
-        btnDesmontar.addActionListener(e -> realizarDesmontagem());
-        btnDesmontarPassoAPasso.addActionListener(e -> realizarDesmontagemPassoAPasso());
-
-        // Painel central
+        btnDesmontarPeca.addActionListener(e -> desmontarPeca());
+        btnDesmontarTudo.addActionListener(e -> desmontarTudo());
+    
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 new JScrollPane(listaComponentes),
                 new JScrollPane(logArea));
         splitPane.setResizeWeight(0.5);
-
+    
         add(painelSuperior, BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
-
-        // Status da montagem
+    
         JLabel statusLabel = new JLabel("Cadeira atual: 1");
         add(statusLabel, BorderLayout.SOUTH);
-    }
 
+        JButton btnExibirStatus = new JButton("Exibir Status");
+        painelConfig.add(btnExibirStatus);
+
+// Ação do botão
+btnExibirStatus.addActionListener(e -> exibirStatusCadeiras());
+    }
     private void iniciarNovaMontagem() {
         totalCadeiras = (int) spinnerCadeiras.getValue();
         cadeiraAtual = 1;
@@ -182,21 +149,16 @@ public class MontagemCadeira extends JFrame {
         logArea.setText("");
         logArea.append("Iniciando montagem de " + totalCadeiras + " cadeira(s)\n");
         logArea.append("Montando cadeira 1\n");
+        preencherFilaSequencia();
     }
 
-    private Peca[] getSequenciaCorreta(int numeroCadeira) {
-        Peca[] sequencia = new Peca[SEQUENCIA_BASE.length];
-        for (int i = 0; i < SEQUENCIA_BASE.length; i++) {
-            Peca pecaBase = SEQUENCIA_BASE[i];
-            sequencia[i] = new Peca(pecaBase.getNome(), pecaBase.getNumero(), numeroCadeira);
+    private void preencherFilaSequencia() {
+        filaSequencia.clear();
+        for (int i = 0; i < totalCadeiras; i++) {
+            for (Peca peca : SEQUENCIA_BASE) {
+                filaSequencia.add(new Peca(peca.getNome(), peca.getNumero(), i + 1));
+            }
         }
-        return sequencia;
-    }
-
-    private boolean validarProximaPeca(Peca peca) {
-        int indiceAtual = listModel.getSize() % SEQUENCIA_BASE.length;
-        Peca[] sequenciaAtual = getSequenciaCorreta(cadeiraAtual);
-        return peca.equals(sequenciaAtual[indiceAtual]);
     }
 
     private void montarPeca() {
@@ -207,51 +169,110 @@ public class MontagemCadeira extends JFrame {
                 JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
+    
         String nome = (String) pecaCombo.getSelectedItem();
         int numero = (int) numeroCombo.getSelectedItem();
         Peca peca = new Peca(nome, numero, cadeiraAtual);
-        
-        if (validarProximaPeca(peca)) {
-            pilhaMontagem.push(peca);  // Utilizando o método push da pilha
+    
+        if (peca.equals(filaSequencia.peek())) {
+            pilhaMontagem.push(peca);
             listModel.addElement(peca.toString());
             logArea.append("Peça montada corretamente: " + peca + "\n");
-
-            // Verificar se completou uma cadeira
-            if (listModel.getSize() % SEQUENCIA_BASE.length == 0) {
+            filaSequencia.poll();  // Remove a peça da fila de montagem
+    
+            if (filaSequencia.isEmpty() || !filaSequencia.peek().getNumeroCadeira().equals(cadeiraAtual)) {
                 cadeiraAtual++;
                 if (cadeiraAtual <= totalCadeiras) {
-                    logArea.append("\nCadeira " + (cadeiraAtual-1) + " completa!\n");
-                    logArea.append("Iniciando montagem da cadeira " + cadeiraAtual + "\n");
+                    logArea.append("Montagem da cadeira " + cadeiraAtual + " iniciada.\n");
                 } else {
-                    logArea.append("\nTodas as cadeiras foram montadas com sucesso!\n");
-                    JOptionPane.showMessageDialog(this,
-                        "Todas as " + totalCadeiras + " cadeiras foram montadas com sucesso!",
-                        "Montagem Concluída",
-                        JOptionPane.INFORMATION_MESSAGE);
+                    logArea.append("Montagem de todas as cadeiras concluída.\n");
                 }
             }
         } else {
-            logArea.setForeground(Color.RED);
-            logArea.append("Erro: A peça " + peca + " está fora da ordem correta.\n");
-            logArea.setForeground(Color.BLACK);
+            Peca pecaEsperada = filaSequencia.peek();  // Obtém a peça que deveria ser montada
+            logArea.append("Erro: Peça fora da ordem esperada. Esperada: " + pecaEsperada + "\n");
         }
     }
+    
 
-    private void realizarDesmontagem() {
-        while (!pilhaMontagem.pEmpty()) {  // Usando pEmpty()
-            Peca peca = (Peca) pilhaMontagem.removerFinal();  // Usando removerFinal()
-            logArea.append("Desmontando: " + peca + "\n");
+    private void desmontarPeca() {
+        if (pilhaMontagem.pEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Nenhuma peça para desmontar.",
+                "Erro",
+                JOptionPane.WARNING_MESSAGE);
+            return;
         }
-        logArea.append("Desmontagem concluída.\n");
+        
+        // Remove a peça da pilha de montagem
+        Peca pecaDesmontada = (Peca) pilhaMontagem.removerFinal();
+        pilhaDesmontagem.push(pecaDesmontada);  // Adiciona à pilha de desmontagem
+        listModel.remove(listModel.getSize() - 1);  // Remove da lista de componentes montados
+        logArea.append("Peça desmontada: " + pecaDesmontada + "\n");
+        
+        // Adiciona a peça desmontada no começo da fila para garantir que seja a próxima peça
+        filaSequencia.addFirst(pecaDesmontada);  // Agora a peça desmontada será a próxima a ser montada
+        logArea.append("Peça desmontada adicionada novamente à fila de montagem: " + pecaDesmontada + "\n");
+    
+        // Atualiza a montagem, se necessário
+        // if (!filaSequencia.isEmpty() && filaSequencia.peek().getNumeroCadeira().equals(cadeiraAtual)) {
+        //     montarPeca();  // Chama a função de montar peça, se necessário
+        // }
+    }    
+    
+    
+    private void desmontarTudo() {
+        if (pilhaMontagem.pEmpty()) { // Corrigido
+            JOptionPane.showMessageDialog(this,
+                "Nenhuma peça para desmontar.",
+                "Erro",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        logArea.append("Desmontando todas as peças...\n");
+        while (!pilhaMontagem.pEmpty()) { // Corrigido
+            Peca pecaDesmontada = (Peca) pilhaMontagem.removerFinal(); // Corrigido
+            pilhaDesmontagem.push(pecaDesmontada);
+            listModel.remove(listModel.getSize() - 1);
+            logArea.append("Peça desmontada: " + pecaDesmontada + "\n");
+            filaSequencia.addFirst(pecaDesmontada);  // Agora a peça desmontada será a próxima a ser montada
+            logArea.append("Peça desmontada adicionada novamente à fila de montagem: " + pecaDesmontada + "\n");
+        }
+        logArea.append("Todas as peças foram desmontadas.\n");
     }
 
-    private void realizarDesmontagemPassoAPasso() {
-        if (!pilhaMontagem.pEmpty()) {
-            Peca peca = (Peca) pilhaMontagem.removerFinal();  // Usando removerFinal()
-            logArea.append("Desmontando peça: " + peca + "\n");
-        } else {
-            logArea.append("A pilha de montagem já está vazia.\n");
+    private void exibirStatusCadeiras() {
+        logArea.setText(""); // Limpa os logs
+    
+        logArea.append("Status das Cadeiras:\n");
+        for (int i = 1; i <= totalCadeiras; i++) {
+            if (i < cadeiraAtual) {
+                logArea.append("Cadeira " + i + ": Completa\n");
+            } else if (i == cadeiraAtual) {
+                logArea.append("Cadeira " + i + ": Em andamento\n");
+            } else {
+                logArea.append("Cadeira " + i + ": Na fila\n");
+            }
+        }
+    
+        logArea.append("\nComponentes Montados:\n");
+        if (pilhaMontagem.pEmpty()) {
+            logArea.append("Nenhum componente montado ainda.\n");
+            return;
+        }
+    
+        // Exibir componentes da pilha de montagem
+        Pilha tempPilha = new Pilha();
+        while (!pilhaMontagem.pEmpty()) {
+            Peca peca = (Peca) pilhaMontagem.removerFinal();
+            tempPilha.push(peca);
+            logArea.append(peca.toString() + "\n");
+        }
+    
+        // Recolocar os itens na pilha original
+        while (!tempPilha.pEmpty()) {
+            pilhaMontagem.push(tempPilha.removerFinal());
         }
     }
 
