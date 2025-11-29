@@ -49,17 +49,6 @@ MontadorCadeira/
 6. Use "Desmontar" para iniciar a desmontagem
 7. Repita o processo para todas as cadeiras selecionadas
 
-## 🔍 Sequência de Montagem
-A cadeira deve ser montada na seguinte ordem:
-1. Perna da mesa - 1
-2. Acentos
-3. Arruela - 1
-4. Parafuso - 1
-5. Perna da mesa - 2
-[...]
-17. Suporte para encosto
-18. Encosto
-
 ## 🤝 Contribuindo
 Para contribuir com o projeto:
 1. Faça um fork do repositório
@@ -77,15 +66,3 @@ Para contribuir com o projeto:
 ## ✍️ Autores
 - Felipe
 - Ariel
-
-## 📄 Licença
-Este projeto está sob a licença [sua licença aqui].
-
-## 📞 Suporte
-Para suporte, entre em contato através de [seu contato aqui].
-
-## 🔮 Próximos Passos
-- Adicionar animações mais suaves
-- Implementar visualização 3D
-- Adicionar mais tipos de móveis
-- Melhorar feedback visual de erros
